@@ -12,7 +12,6 @@ import org.mitre.neoprofiler.profiler.RelationshipsProfiler;
 import org.mitre.neoprofiler.profiler.SchemaProfiler;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.remote.RemoteGraphDatabase;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -46,12 +45,20 @@ public class NeoProfiler {
 			Profiler profiler = schedule.get(x);
 			System.out.println("Running " + profiler.getClass().getName());
 			long t1 = System.currentTimeMillis();
-			NeoProfile prof = profiler.run(this);				
+			
+			NeoProfile prof = null;
+			
+			try { 
+				prof = profiler.run(this);
+			} catch(Exception exc) { 
+				System.err.println(profiler.getClass().getName() + " failed.");
+				continue;
+			}
 			long t2 = System.currentTimeMillis();
 			
 			prof.addObservation("Run Time (ms)", (t2 - t1));
 			
-			p.addProfile(prof);
+			if(prof != null) p.addProfile(prof);
 			x++;
 		}
 		
@@ -63,15 +70,28 @@ public class NeoProfiler {
 		
 		if(args.length < 1) {
 			System.out.println("Usage: NeoProfiler <path_to_db>");
-			System.exit(0);
+			System.exit(1);
 		} else dbPath = args[0];
 		
 		GraphDatabaseService svc = null;
 		
-		if(new File(args[0]).exists()) {
+		File f = new File(args[0]);
+		if(f.exists()) {
+			if(!f.isDirectory()) {
+				System.out.println("Usage: NeoProfiler <path_to_db>");
+				System.out.println("The path argument should refer to a directory containing the database files.");
+				System.exit(1);
+			}			
+			
 			svc = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
 		} else if(args[0].contains("http")) {
-			svc = new RemoteGraphDatabase(args[0]);
+			// svc = new RestGraphDatabase(args[0]);
+			System.out.println("HTTP endpoints are not yet supported.");
+			System.exit(1);
+		} else {
+			System.err.println("Invalid database provided, or path does not exist.");
+			System.out.println("Usage: NeoProfiler <path_to_db>");
+			System.exit(1);			
 		}
 		
 		NeoProfiler profiler = new NeoProfiler(dbPath, svc);

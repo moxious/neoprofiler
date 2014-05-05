@@ -6,6 +6,10 @@ population of a new Neo4J database.
 
 ## Quick Start
 
+Install one dependency:
+ - `git clone https://github.com/neo4j/java-rest-binding.git`
+ - `cd java-rest-binding ; mvn install`
+
 Clone the repo: `git clone https://github.com/moxious/neoprofiler.git`
 
 Package the application:  `mvn package`
