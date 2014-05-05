@@ -1,9 +1,11 @@
 package org.mitre.neoprofiler.profiler;
 
+import java.util.HashSet;
 import java.util.List;
 
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
+import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
@@ -29,8 +31,18 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:" + label + ") return n as instance limit 10", "instance");
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
+			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
+			HashSet<String> seen = new HashSet<String>();
+			
 			for(Object ns : nodeSamples) { 				
-				p.addObservation("Sample properties", stringList(getSampleProperties(parent, (Node)ns)));
+				for(NeoProperty prop : getSampleProperties(parent, (Node)ns)) {
+					if(seen.contains(prop.toString())) continue;
+					
+					props.add(prop);
+					seen.add(prop.toString());
+				}
+				
+				p.addObservation("Sample properties", props);
 			}
 		} // End try
 			

@@ -8,16 +8,19 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.mitre.neoprofiler.NeoProfiler;
-import org.mitre.neoprofiler.profile.RelationshipsProfile;
+import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
 
-public class QueryRunner {
+/**
+ * Abstract class that contains various query running utilities to make implementation of downstream profilers easier.
+ * @author moxious
+ */
+public abstract class QueryRunner {
 	protected static final Logger log = Logger.getLogger(QueryRunner.class.getName());
 	
 	protected boolean canConsumeFrom(List<ResourceIterator<Object>> rits) {
@@ -38,8 +41,8 @@ public class QueryRunner {
 		return vals;
 	}
 		
-	public Iterable<String> getSampleProperties(NeoProfiler parent, PropertyContainer n) {
-		List<String> r = new ArrayList<String>();
+	public List<NeoProperty> getSampleProperties(NeoProfiler parent, PropertyContainer n) {
+		List<NeoProperty> props = new ArrayList<NeoProperty>();
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {			 
 			Iterator<String> propKeys = n.getPropertyKeys().iterator();
@@ -48,12 +51,12 @@ public class QueryRunner {
 				String key = propKeys.next();
 				Object val = n.getProperty(key);
 				
-				r.add(key + "(" + val.getClass().getSimpleName() + ")");
+				props.add(new NeoProperty(key, val.getClass().getSimpleName()));				
 			}
 			
 		} // End try
 		
-		return r;
+		return props;
 	}
 	
 	public Map<String,List<Object>> runQueryComplexResult(NeoProfiler parent, String query, String...columns) {
@@ -63,7 +66,7 @@ public class QueryRunner {
 		List<Object> retvals = new ArrayList<Object>();
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
-			log.info(query);
+			// log.info(query);
 			ExecutionResult result = engine.execute(query);
 			
 			List<ResourceIterator<Object>> rits = new ArrayList<ResourceIterator<Object>>();

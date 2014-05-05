@@ -9,9 +9,12 @@ import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
+/**
+ * Profiler for a particular relationship type.
+ * @author moxious
+ */
 public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 	String type = null;
 	
@@ -28,11 +31,11 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 	public NeoProfile run(NeoProfiler parent) {		
 		NeoProfile p = new RelationshipTypeProfile(type);
 		
-		Object result = runQuerySingleResult(parent, "match n-[r:" + type + "]->m return count(r) as c", "c");
+		Object result = runQuerySingleResult(parent, "match n-[r:`" + type + "`]->m return count(r) as c", "c");
 		p.addObservation("Total relationships", ""+result);
 		
 		Map<String,List<Object>> ret = runQueryComplexResult(parent,
-				"match n-[r:" + type + "]->m return n as left, m as right limit 50", 
+				"match n-[r:`" + type + "`]->m return n as left, m as right limit 50", 
 				"right", "left");
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {

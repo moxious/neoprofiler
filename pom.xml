@@ -17,8 +17,16 @@
 			<artifactId>neo4j-cypher</artifactId>
 			<version>2.0.2</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.neo4j</groupId> <artifactId>neo4j-rest-graphdb</artifactId> 
-			<version>1.8.M07</version> </dependency> -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-remote-graphdb</artifactId>
+			<version>0.8-1.2</version>			
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -39,7 +47,7 @@
 						<configuration>
 							<!-- Optional, default is false -->
 							<attachToBuild>true</attachToBuild>
-		
+		                	<mainClass>org.mitre.neoprofiler.NeoProfiler</mainClass>
 							<!-- Optional, default is "onejar" -->
 							<classifier>onejar</classifier>
 						</configuration>
