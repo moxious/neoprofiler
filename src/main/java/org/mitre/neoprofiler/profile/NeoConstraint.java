@@ -8,11 +8,11 @@ import org.neo4j.graphdb.schema.ConstraintType;
 import org.neo4j.helpers.collection.IteratorUtil;
 
 public class NeoConstraint {
-	boolean constraint = false;
-	boolean index = false;
-	List<String> propertyKeys = new ArrayList<String>();
-	ConstraintType type = ConstraintType.UNIQUENESS;
-	String label = "";
+	public boolean constraint = false;
+	public boolean index = false;
+	public List<String> propertyKeys = new ArrayList<String>();
+	public ConstraintType type = ConstraintType.UNIQUENESS;
+	public String label = "";
 	
 	public NeoConstraint(boolean constraint, boolean index, Iterable<String>propKeys, Label label, ConstraintType type) {
 		this.constraint = constraint;
