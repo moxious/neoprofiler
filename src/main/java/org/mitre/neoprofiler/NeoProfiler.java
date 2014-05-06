@@ -168,7 +168,7 @@ public class NeoProfiler {
 			
 			System.exit(0);
 		} catch(ParseException exc) {
-	        System.err.println("Parsing failed.  Reason: " + exc.getMessage() );
+	        System.err.println(exc.getMessage());
 	        usage();
 	        System.exit(1);
 		}
