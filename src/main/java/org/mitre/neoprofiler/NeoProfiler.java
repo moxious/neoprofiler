@@ -1,11 +1,23 @@
 package org.mitre.neoprofiler;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.mitre.neoprofiler.markdown.MarkdownMaker;
 import org.mitre.neoprofiler.profile.DBProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
@@ -23,6 +35,8 @@ public class NeoProfiler {
 	protected GraphDatabaseService svc = null;
 	protected String storageLoc = null;
 	protected List<Profiler> schedule = new ArrayList<Profiler>();
+	
+	public enum Format { MARKDOWN, HTML, JSON };
 	
 	public NeoProfiler(String storageLoc, GraphDatabaseService svc) { 
 		this.svc = svc;
@@ -68,49 +82,127 @@ public class NeoProfiler {
 		return p;
 	} // End run
 	
-	public static void main(String [] args) throws Exception {
-		String dbPath = "/home/x/neo20_mitre_db";
+	public static Options makeCLIOptions() { 
+		Options options = new Options();
 		
-		if(args.length < 1) {
-			System.out.println("Usage: NeoProfiler <path_to_db>");
-			System.exit(1);
-		} else dbPath = args[0];
+		options.addOption(OptionBuilder.withArgName("db")
+				          .hasArg()
+				          .isRequired()
+				          .withDescription("Path to directory where neo4j database is located")
+				          .create("db"));
 		
-		GraphDatabaseService svc = null;
+		options.addOption(OptionBuilder.withArgName("format")
+				          .hasArg()
+				          .isRequired()
+				          .withDescription("Output format: valid values are json, markdown, or html")
+				          .create("format"));
+
+		options.addOption(OptionBuilder.withArgName("output")
+				          .hasArg()
+				          .isRequired(false)
+				          .withDescription("Name of output file to write; program will print to console if not specified.")
+				          .create("output"));
 		
-		File f = new File(args[0]);
-		if(f.exists()) {
-			if(!f.isDirectory()) {
-				System.out.println("Usage: NeoProfiler <path_to_db>");
-				System.out.println("The path argument should refer to a directory containing the database files.");
-				System.exit(1);
-			}			
+		return options;
+	}
+	
+	public static void main(String [] args) throws Exception { 
+		CommandLineParser parser = new GnuParser();
+		
+		try { 
+			CommandLine line = parser.parse(makeCLIOptions(), args );
+			System.out.println(line);
 			
-			svc = new GraphDatabaseFactory().newEmbeddedDatabase(dbPath);
-		} else if(args[0].contains("http")) {
-			// svc = new RestGraphDatabase(args[0]);
-			System.out.println("HTTP endpoints are not yet supported.");
-			System.exit(1);
-		} else {
-			System.err.println("Invalid database provided, or path does not exist.");
-			System.out.println("Usage: NeoProfiler <path_to_db>");
-			System.exit(1);			
+			String path = line.getOptionValue("db");
+			String format = line.getOptionValue("format");
+			String output = line.getOptionValue("output");
+			
+			Writer destination = null;
+			if(output == null) destination = new StringWriter();
+			
+			File f = new File(path);
+
+			Format fmt = Format.HTML;	
+			
+			if(format == null) fmt = Format.HTML;			
+			else if("html".equals(format)) fmt = Format.HTML;
+			else if("json".equals(format)) fmt = Format.JSON;
+			else if("markdown".equals(format)) fmt = Format.MARKDOWN;
+			else {
+				System.err.println("Invalid or unrecognized format '" + format + "': using default of html");
+			}
+			
+			if(!f.exists()) {
+				System.err.println("Specified database at " + path + ": path does not exist.");
+				usage();
+				System.exit(1);
+			} else if(!f.isDirectory()) {
+				System.out.println("Specified database at " + path + ": path does not refer to a directory.");
+				usage();
+				System.exit(1);				
+			} else if(path.contains("http:")) {
+				System.err.println("HTTP endpoints are not yet supported.");
+				usage();
+				System.exit(1);
+			} 
+
+			
+			if(output != null) {
+				try { destination = new FileWriter(output); }
+				catch(IOException exc) { 
+					System.err.println("Can not create output file at " + output + ": " + exc.getMessage());
+					usage();
+					System.exit(1);
+				}
+			} else { 
+				// Instead of writing to a file, accumulate in this buffer then print out later.
+				destination = new StringWriter();
+			}
+			
+			// Run the profile.
+			profile(path, fmt, destination);
+			
+			// Check for if final results are written to console, or out to a file.
+			if(output == null) System.out.println(((StringWriter)destination).getBuffer());
+			else destination.close();
+			
+			System.exit(0);
+		} catch(ParseException exc) {
+	        System.err.println("Parsing failed.  Reason: " + exc.getMessage() );
+	        usage();
+	        System.exit(1);
 		}
+	}
+
+	public static void usage() {
+		HelpFormatter formatter = new HelpFormatter();			
+		formatter.printHelp("NeoProfiler", makeCLIOptions());
+	}
+	
+	public static void profile(String path, Format fmt, Writer output) throws IOException {
+		GraphDatabaseService svc = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 		
-		NeoProfiler profiler = new NeoProfiler(dbPath, svc);
+		NeoProfiler profiler = new NeoProfiler(path, svc);
 		
 		DBProfile profile = profiler.run();		
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();		
-		System.out.println(gson.toJson(profile));
-		
-		/*
-		System.out.println("Markdown");
 		MarkdownMaker mm = new MarkdownMaker();
-		StringWriter sw = new StringWriter();
 		
-		mm.markdown(profile, sw);
-		
-		System.out.println(sw.getBuffer().toString());
-		*/
+		switch(fmt) { 
+		case JSON:
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();		
+			output.write(gson.toJson(profile));
+			break;
+			
+		case MARKDOWN:			
+			mm.markdown(profile, output);
+			break;
+			
+		case HTML:			
+			mm.html(profile, output);
+			break;
+			
+		default:
+			throw new RuntimeException("Invalid format");
+		}
 	}
 } // End NeoProfiler
