@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html><title>NeoProfile of /home/x/provenance.db/ generated 2014/05/06 15:41:16</title>
+
+<xmp theme='spacelab' style='display:none;'>
+
+# NeoProfile of /home/user/provenance.db/ generated 2014/05/06 15:41:16
+/home/user/provenance.db/
+
+## Schema
+Information about Neo4J's database schema
+
+### Indexes
+*  On nodes labeled Provenance.  Property keys:
+    * oid
+*  On nodes labeled Actor.  Property keys:
+    * aid
+*  On nodes labeled PrivilegeClass.  Property keys:
+    * pid
+*  On nodes labeled NonProvenance.  Property keys:
+    * npid
+
+### Non-Index
+* Type UNIQUENESS On nodes labeled Provenance.  Property keys:
+    * oid
+* Type UNIQUENESS On nodes labeled Actor.  Property keys:
+    * aid
+* Type UNIQUENESS On nodes labeled PrivilegeClass.  Property keys:
+    * pid
+* Type UNIQUENESS On nodes labeled NonProvenance.  Property keys:
+    * npid
+
+### Observations
+* Run Time (ms): 4
+
+
+## Nodes
+Summary statistics about nodes in the graph
+
+### Observations
+* Node Labels: 
+    * [Provenance]
+    * [Actor]
+    * [PrivilegeClass]
+* Run Time (ms): 2622
+* Total Nodes: 13266
+
+
+## Relationships
+Summary statistics about relationships in the graph
+
+### Observations
+* Available Relationship Types: 
+    * dominates
+    * owns
+    * triggered
+    * controlledBy
+    * contributed
+    * generated
+    * input to
+* Run Time (ms): 827
+* Total Relationships: 11948
+
+
+## NodeProfile
+Profile of nodes labeled 'Provenance'
+
+### Observations
+* Inbound relationship types: 
+    * triggered
+    * contributed
+    * generated
+    * input to
+    * owns
+* Outbound relationship types: 
+    * triggered
+    * controlledBy
+    * contributed
+    * input to
+    * generated
+* Run Time (ms): 465
+* Sample properties: 
+    * when_end (String) optional
+    * content (String) optional
+    * type (String) required
+    * SGFs (String[]) optional
+    * certainty (String) required
+    * created (Long) required
+    * when_start (String) optional
+    * oid (String) required
+    * activity (String) optional
+    * subtype (String) required
+    * workflow (String) optional
+    * name (String) required
+    * ownerid (String) required
+    * metadata:implus:motif (String) optional
+* Total nodes: 13225
+
+
+## NodeProfile
+Profile of nodes labeled 'Actor'
+
+### Observations
+* Inbound relationship types: 
+* Outbound relationship types: 
+    * owns
+* Run Time (ms): 50
+* Sample properties: 
+    * displayName (String) optional
+    * aid (String) optional
+    * type (String) optional
+    * name (String) optional
+    * created (Long) optional
+* Total nodes: 25
+
+
+## NodeProfile
+Profile of nodes labeled 'PrivilegeClass'
+
+### Observations
+* Inbound relationship types: 
+    * dominates
+    * controlledBy
+* Outbound relationship types: 
+    * dominates
+* Run Time (ms): 36
+* Sample properties: 
+    * created (Long) optional
+    * name (String) optional
+    * description (String) optional
+    * pid (String) optional
+    * type (String) optional
+* Total nodes: 16
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'dominates'
+
+### Observations
+* Run Time (ms): 139
+* Total relationships: 16
+* domain: 
+    * PrivilegeClass
+* range: 
+    * PrivilegeClass
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'owns'
+
+### Observations
+* Run Time (ms): 96
+* Total relationships: 77
+* domain: 
+    * Actor
+* range: 
+    * Provenance
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'triggered'
+
+### Observations
+* Run Time (ms): 98
+* Total relationships: 1257
+* domain: 
+    * Provenance
+* range: 
+    * Provenance
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'controlledBy'
+
+### Observations
+* Run Time (ms): 91
+* Total relationships: 178
+* domain: 
+    * Provenance
+* range: 
+    * PrivilegeClass
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'contributed'
+
+### Observations
+* Run Time (ms): 75
+* Total relationships: 483
+* domain: 
+    * Provenance
+* range: 
+    * Provenance
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'generated'
+
+### Observations
+* Run Time (ms): 98
+* Total relationships: 2911
+* domain: 
+    * Provenance
+* range: 
+    * Provenance
+
+
+## RelationshipTypeProfile
+Profile of relationships of type 'input to'
+
+### Observations
+* Run Time (ms): 133
+* Total relationships: 7026
+* domain: 
+    * Provenance
+* range: 
+    * Provenance
+
+
+</xmp>
+<script src='http://strapdownjs.com/v/0.2/strapdown.js'></script>
+<html>
