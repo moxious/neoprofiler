@@ -7,6 +7,7 @@ package org.mitre.neoprofiler.profile;
 public class NeoProperty {
 	protected String name;
 	protected String type;
+	protected boolean optional = true;
 	
 	public NeoProperty(String name, String type) {
 		if(name == null) name = "";
@@ -16,6 +17,8 @@ public class NeoProperty {
 		this.type = type;
 	}
 	
+	public void setOptional(boolean optional) { this.optional = optional; } 
+	public boolean getOptional() { return optional; } 
 	public String getName() { return name; } 
 	public String getType() { return type; } 
 	
