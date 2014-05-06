@@ -1,9 +1,12 @@
 package org.mitre.neoprofiler;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mitre.neoprofiler.markdown.MarkdownMaker;
 import org.mitre.neoprofiler.profile.DBProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profiler.NodesProfiler;
@@ -99,5 +102,15 @@ public class NeoProfiler {
 		DBProfile profile = profiler.run();		
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();		
 		System.out.println(gson.toJson(profile));
+		
+		/*
+		System.out.println("Markdown");
+		MarkdownMaker mm = new MarkdownMaker();
+		StringWriter sw = new StringWriter();
+		
+		mm.markdown(profile, sw);
+		
+		System.out.println(sw.getBuffer().toString());
+		*/
 	}
 } // End NeoProfiler
