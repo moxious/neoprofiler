@@ -1,5 +1,6 @@
 package org.mitre.neoprofiler.profiler;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -28,25 +29,38 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 	public NeoProfile run(NeoProfiler parent) {		
 		NeoProfile p = new LabelProfile(label);
 		
-		Object result = runQuerySingleResult(parent, "match (n:" + label +") return count(n) as c", "c");
+		Object result = runQuerySingleResult(parent, "match (n:`" + label +"`) return count(n) as c", "c");
 		p.addObservation("Total nodes", ""+result);
 		
-		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:" + label + ") return n as instance limit 10", "instance");
+		int sampleSize = 100;
+		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:`" + label + "`) return n as instance limit " + sampleSize, 
+				"instance");
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
-			HashSet<String> seen = new HashSet<String>();
+			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
 			for(Object ns : nodeSamples) { 				
 				for(NeoProperty prop : getSampleProperties(parent, (Node)ns)) {
-					if(seen.contains(prop.toString())) continue;
+					String key = prop.toString();
+					
+					// Increment counter.
+					if(!seen.containsKey(key)) { seen.put(key, 1); }
+					else { seen.put(key, seen.get(key) + 1); continue; } 					
 					
 					props.add(prop);
-					seen.add(prop.toString());
-				}
-				
-				p.addObservation("Sample properties", props);
+				}							
 			}
+			
+			// If a property was seen in some (but not all) samples, then it's optional.
+			for(NeoProperty prop : props) { 
+				int count = seen.get(prop.toString());
+				System.out.println("For label " + label + " property " + prop + " seen " + count + " of " + sampleSize + " times.");
+				if(count < sampleSize) prop.setOptional(true);
+				else prop.setOptional(false); 
+			}
+			
+			p.addObservation("Sample properties", props);
 		} // End try
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
