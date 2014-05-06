@@ -17,6 +17,8 @@ public class DBProfile extends NeoProfile {
 		description = storageLoc;
 	}
 	
+	public List<NeoProfile> getProfiles() { return profiles; } 
+	
 	public void addProfile(NeoProfile profile) { 
 		profiles.add(profile);
 	}

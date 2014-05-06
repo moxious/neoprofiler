@@ -34,6 +34,6 @@ public class NeoProperty {
 	}
 	
 	public String toString() { 
-		return name + " (" + type + ")";
+		return name + " (" + type + ") " + (optional ? "optional" : "required");
 	}
 } // End NeoProperty

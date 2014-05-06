@@ -8,4 +8,6 @@ public class ParameterizedNeoProfile extends NeoProfile {
 	
 	public Object getParameter(String name) { return params.get(name); } 
 	public void setParameter(String name, Object param) { params.put(name,  param); }  
+	
+	public Map<String,Object> getParameters() { return params; } 
 }
