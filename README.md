@@ -6,15 +6,11 @@ population of a new Neo4J database.
 
 ## Quick Start
 
-Install one dependency:
- - `git clone https://github.com/neo4j/java-rest-binding.git`
- - `cd java-rest-binding ; mvn install`
+**Clone the repo**: `git clone https://github.com/moxious/neoprofiler.git`
 
-Clone the repo: `git clone https://github.com/moxious/neoprofiler.git`
+**Package the application**:  `mvn package`
 
-Package the application:  `mvn package`
-
-Run from the command line: `java -jar target/neoprofiler-0.1.one-jar.jar <path-to-neo4j-database>`
+**Run from the command line**: `java -jar target/neoprofiler-0.1.one-jar.jar <path-to-neo4j-database>`
 
 The argument given to the application should be the path to a directory containing a neo4j database.
 
@@ -31,7 +27,7 @@ have the properties that you expect.
 Currently, neoprofiler outputs a JSON object as its result, which contains a
 profile of the database.  
 
-The source distribution contains a file called `SAMPLE.cypher` with a few
+The source distribution contains a file called [SAMPLE.cypher](SAMPLE.cypher) with a few
 simple statements to create a sample database.  The output below corresponds
 to what the program creates when run on that sample database.
 
