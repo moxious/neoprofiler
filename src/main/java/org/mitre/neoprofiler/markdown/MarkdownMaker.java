@@ -144,9 +144,6 @@ public class MarkdownMaker {
 		
 		writer.write("\n</xmp>\n");
 		writer.write("<script src='http://strapdownjs.com/v/0.2/strapdown.js'></script>\n");		
-		writer.write("<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js'></script>");
-		writer.write("<script src='https://raw.github.com/jgallen23/toc/master/dist/jquery.toc.min.js'></script>");
-		writer.write("<script src='https://github.com/zipizap/strapdown_template/raw/master/js/init_TOC.js'></script>");
 		writer.write("</html>");
 	} // End html
 }
