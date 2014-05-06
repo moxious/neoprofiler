@@ -18,7 +18,15 @@ Run from the command line: `java -jar target/neoprofiler-0.1.one-jar.jar <path-t
 
 The argument given to the application should be the path to a directory containing a neo4j database.
 
-## Output
+## Motivation
+
+If you work with many Neo4J databases, it's often convenient to get a
+high-level picture of what is in a particular dataset before you jump in.  If
+you write application code which interacts with a Neo4J database, it's good to
+be able to verify that the population of nodes and relationships you're writing
+have the properties that you expect.
+
+## Output Example
 
 Currently, neoprofiler outputs a JSON object as its result, which contains a
 profile of the database.  
@@ -26,6 +34,9 @@ profile of the database.
 The source distribution contains a file called `SAMPLE.cypher` with a few
 simple statements to create a sample database.  The output below corresponds
 to what the program creates when run on that sample database.
+
+Code is under development, and so this output format is not yet stable; as
+new features are added, changes are likely to occur.
 
 ```
 {
@@ -136,3 +147,32 @@ to what the program creates when run on that sample database.
   ]
 }
 ```
+
+## FAQ
+
+### How does it work?
+
+The program contains a number of profilers, most of which run very simple
+Cypher queries against your database and provide summary statistics.  Some
+profilers will actually discover data in your graph and then spawn other
+profilers which will run later.  For example, if a label called "Person" is
+discovered in the data, a label profiler will be added to the run queue to 
+inspect the population of nodes with that label.
+
+Right now, the focus is on simple queries that return descriptive statistics.
+
+Additionally, profiling right now must occur while the database is offline,
+because the profiler opens the database in embedded mode.
+
+### Can I profile a database available via a URL?
+
+No, not yet - but this is part of the plan, and is in the works.
+
+### Will the profiler modify my database?
+
+Absolutely not.  All queries are read-only; any storage that is needed will
+happen in memory or via another method, to guarantee no modifications are
+made to the database being profiled.
+
+
+
