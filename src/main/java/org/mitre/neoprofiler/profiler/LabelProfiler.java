@@ -6,15 +6,18 @@ import java.util.List;
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
+import org.mitre.neoprofiler.profile.ParameterizedNeoProfile;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 public class LabelProfiler extends QueryRunner implements Profiler {
 	String label = null;
 	
-	class LabelProfile extends NeoProfile {
+	class LabelProfile extends ParameterizedNeoProfile {
 		public LabelProfile(String label) { 
-			name="NodeProfile"; description="Profile of nodes labeled '" + label + "'";
+			name="NodeProfile"; 
+			description="Profile of nodes labeled '" + label + "'";
+			setParameter("label", label);
 		}
 	}
 	
@@ -48,11 +51,11 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
-		p.addObservation("Outbound relationship types", stringList(outbound));
+		p.addObservation("Outbound relationship types", outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
-		p.addObservation("Inbound relationship types", stringList(inbound)); 
+		p.addObservation("Inbound relationship types", inbound); 
 		
 		// TODO Auto-generated method stub
 		return p;

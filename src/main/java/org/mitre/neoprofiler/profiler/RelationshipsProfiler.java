@@ -13,8 +13,7 @@ public class RelationshipsProfiler extends QueryRunner implements Profiler {
 		ExecutionEngine engine = new ExecutionEngine(parent.getDB());
 		
 		List<Object> relTypes = runQueryMultipleResult(parent, "match n-[r]->m return distinct(type(r)) as relTypes", "relTypes");
-		p.addObservation("Available Relationship Types", 
-				stringList(relTypes));
+		p.addObservation("Available Relationship Types", relTypes);
 
 		for(Object relType : relTypes) { 
 			parent.schedule(new RelationshipTypeProfiler(""+relType));

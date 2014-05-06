@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
+import org.mitre.neoprofiler.profile.ParameterizedNeoProfile;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -18,9 +19,11 @@ import org.neo4j.graphdb.Transaction;
 public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 	String type = null;
 	
-	class RelationshipTypeProfile extends NeoProfile {
+	class RelationshipTypeProfile extends ParameterizedNeoProfile {
 		public RelationshipTypeProfile(String type) { 
-			name="RelationshipTypeProfile"; description="Profile of relationships of type '" + type + "'";
+			name="RelationshipTypeProfile"; 
+			description="Profile of relationships of type '" + type + "'";
+			setParameter("type", type);			
 		}
 	}
 	
@@ -40,12 +43,13 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
 			HashSet<String> labels = new HashSet<String>();
+			
 			for(Object headNode : ret.get("left")) {
 				Iterator<Label> headLabels = ((Node)headNode).getLabels().iterator();
 				while(headLabels.hasNext()) labels.add(headLabels.next().name());				
 			}
 			
-			p.addObservation("domain", stringList(labels));
+			p.addObservation("domain", labels); 
 						
 			labels = new HashSet<String>();
 			for(Object tailNode : ret.get("right")) {
@@ -53,7 +57,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 				while(tailLabels.hasNext()) labels.add(tailLabels.next().name());				
 			}
 			
-			p.addObservation("range", stringList(labels)); 			
+			p.addObservation("range", labels); 			
 		} // End try
 			
 		return p;

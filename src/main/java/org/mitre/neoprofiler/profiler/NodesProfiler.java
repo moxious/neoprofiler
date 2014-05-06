@@ -21,7 +21,7 @@ public class NodesProfiler extends QueryRunner implements Profiler {
 			parent.schedule(new LabelProfiler(""+l));
 		}
 		
-		p.addObservation("Available Node Labels", stringList(labels));		
+		p.addObservation("Node Labels", labels);		
 		p.addObservation("Total Nodes", runQuerySingleResult(parent, "match n return count(n) as c", "c"));
 		
 		return p;

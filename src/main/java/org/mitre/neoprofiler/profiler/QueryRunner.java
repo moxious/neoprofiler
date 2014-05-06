@@ -14,7 +14,6 @@ import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.collection.IteratorUtil;
 
 /**
  * Abstract class that contains various query running utilities to make implementation of downstream profilers easier.
@@ -22,25 +21,7 @@ import org.neo4j.helpers.collection.IteratorUtil;
  */
 public abstract class QueryRunner {
 	protected static final Logger log = Logger.getLogger(QueryRunner.class.getName());
-	
-	protected boolean canConsumeFrom(List<ResourceIterator<Object>> rits) {
-		for(ResourceIterator<Object> rit : rits) { 
-			if(!rit.hasNext()) return false; 
-		}
-		
-		return true;
-	} // End canConsumeFrom
-	
-	protected List<Object> consume1Parallel(List<ResourceIterator<Object>> rits) {
-		ArrayList<Object> vals = new ArrayList<Object>();
-		
-		for(ResourceIterator<Object> rit : rits) { 
-			vals.add(rit.next());
-		}
-		
-		return vals;
-	}
-		
+				
 	public List<NeoProperty> getSampleProperties(NeoProfiler parent, PropertyContainer n) {
 		List<NeoProperty> props = new ArrayList<NeoProperty>();
 		
@@ -69,38 +50,19 @@ public abstract class QueryRunner {
 			// log.info(query);
 			ExecutionResult result = engine.execute(query);
 			
-			List<ResourceIterator<Object>> rits = new ArrayList<ResourceIterator<Object>>();
-			List<List<Object>> consumed = new ArrayList<List<Object>>();
+			ResourceIterator<Map<String,Object>> rows = result.iterator();
 			
-			for(String col : columns) { 
-				// rits.add(result.columnAs(col));
-				/*
-				ResourceIterator<Object> rit = result.columnAs(col);					
+			while(rows.hasNext()) {
+				Map<String,Object> row = rows.next();
 				
-				all.put(col, new ArrayList<Object>()); 
-				
-				while(rit.hasNext()) {
-					all.get(col).add(rit.next());
-				}
-				*/
-				
-				all.put(col, IteratorUtil.asList(result.columnAs(col)));
-			}
-			
-			/*
-			while(canConsumeFrom(rits)) {
-				List<Object> items = consume1Parallel(rits);
-				
-				if(items.size() != columns.length) throw new RuntimeException(items.size() + " items consumed for " + columns.length + " cols!");
-				
-				for(int x=0; x<items.size(); x++) { 
-					all.get(columns[x]).add(items.get(x));
+				for(String col : columns) { 
+					if(!all.containsKey(col)) all.put(col, new ArrayList<Object>());
+					all.get(col).add(row.get(col));
 				}
 			}
 			
-			for(ResourceIterator<Object> rit : rits) { rit.close(); }
-			*/			
-		}
+			rows.close();
+		} // End try
 		
 		return all;
 	}
@@ -139,7 +101,8 @@ public abstract class QueryRunner {
 		
 		return retvals;
 	}
-	
+
+	/*
 	public String stringList(Iterable<?> objs) { 
 		StringBuffer b = new StringBuffer("");		
 		Iterator<?> it = objs.iterator();		
@@ -157,4 +120,5 @@ public abstract class QueryRunner {
 		
 		return b.toString();
 	}
+	*/
 }
