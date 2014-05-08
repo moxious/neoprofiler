@@ -10,6 +10,8 @@ population of a new Neo4J database.
 
 **Package the application**:  `mvn package`
 
+Note that packaging includes the creation of a runnable "One JAR" which includes all necessary dependencies.
+
 **Run from the command line**: 
 `java -jar target/neoprofiler-0.1.one-jar.jar -db path_to_db -format html -output db_profile_report.html`
 
