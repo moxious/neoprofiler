@@ -1,5 +1,6 @@
 package org.mitre.neoprofiler.profiler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,9 +17,10 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 	
 	class LabelProfile extends ParameterizedNeoProfile {
 		public LabelProfile(String label) { 
-			name="NodeProfile"; 
+			name="Label '" + label + "'"; 
 			description="Profile of nodes labeled '" + label + "'";
 			setParameter("label", label);
+			setParameter("sampleSize", new Integer(100));
 		}
 	}
 	
@@ -27,12 +29,12 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 	}
 	
 	public NeoProfile run(NeoProfiler parent) {		
-		NeoProfile p = new LabelProfile(label);
+		LabelProfile p = new LabelProfile(label);
 		
 		Object result = runQuerySingleResult(parent, "match (n:`" + label +"`) return count(n) as c", "c");
 		p.addObservation("Total nodes", ""+result);
 		
-		int sampleSize = 100;
+		int sampleSize = (Integer)p.getParameter("sampleSize");
 		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:`" + label + "`) return n as instance limit " + sampleSize, 
 				"instance");
 		
@@ -65,10 +67,14 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
+		
+		if(outbound.isEmpty()) outbound.add("N/A");
 		p.addObservation("Outbound relationship types", outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
+		
+		if(inbound.isEmpty()) inbound.add("N/A");
 		p.addObservation("Inbound relationship types", inbound); 
 		
 		// TODO Auto-generated method stub

@@ -71,7 +71,7 @@ public abstract class QueryRunner {
 		ExecutionEngine engine = new ExecutionEngine(parent.getDB());
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
-			log.info(query);
+			// log.info(query);
 			ExecutionResult result = engine.execute(query);
 			ResourceIterator<Object> vals = result.columnAs(columnReturn);
 						
@@ -90,7 +90,7 @@ public abstract class QueryRunner {
 		List<Object> retvals = new ArrayList<Object>();
 		
 		try ( Transaction tx = parent.getDB().beginTx() ) {
-			log.info(query);
+			// log.info(query);
 			ExecutionResult result = engine.execute(query);
 			ResourceIterator<Object> rit = result.columnAs(columnReturn);
 					

@@ -74,7 +74,7 @@ public class MarkdownMaker {
 				String type = (con.type == null ? "" : "Type " + con.type);
 				String lab = ((!"".equals(con.label) && con.label != null) ? "On nodes labeled " + con.label : ""); 
 				
-				b.append("* " + type + " " + lab);
+				b.append("* Constraint " + type + " " + lab);
 				
 				if(con.propertyKeys.isEmpty()) b.append("\n");
 				else {
@@ -109,7 +109,7 @@ public class MarkdownMaker {
 	}
 		
 	public void markdownComponentProfile(NeoProfile profile, Writer writer) throws IOException {
-		writer.write(h2(profile.getName()) + profile.getDescription() + "\n");
+		writer.write(h2(profile.getName()) + "*" + profile.getDescription() + "*\n");
 		
 		//if(profile instanceof ParameterizedNeoProfile) { 
 		//	writer.write(parameters(((ParameterizedNeoProfile)profile).getParameters()));
@@ -118,7 +118,7 @@ public class MarkdownMaker {
 		if(profile instanceof SchemaProfile) {
 			SchemaProfile sp = (SchemaProfile)profile;
 			writer.write(constraints("Indexes", sp.getIndexes()));
-			writer.write(constraints("Non-Index", sp.getNonIndexes()));
+			writer.write(constraints("Non-Index Constraints", sp.getNonIndexes()));
 		}
 		
 		writer.write(observations(profile.getObservations()));

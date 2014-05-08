@@ -13,7 +13,7 @@ public class DBProfile extends NeoProfile {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
 		
-		name = "NeoProfile of " + storageLoc + " generated " + dateFormat.format(date);
+		name = "Profile of " + storageLoc + " generated " + dateFormat.format(date);
 		description = storageLoc;
 	}
 	

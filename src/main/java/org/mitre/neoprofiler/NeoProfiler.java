@@ -60,7 +60,7 @@ public class NeoProfiler {
 		
 		while(x < schedule.size()) {
 			Profiler profiler = schedule.get(x);
-			System.out.println("Running " + profiler.getClass().getName());
+			System.out.println("Running " + profiler.getClass().getSimpleName() + " (" + (x+1) + " of " + schedule.size() + ")");
 			long t1 = System.currentTimeMillis();
 			
 			NeoProfile prof = null;
@@ -110,8 +110,7 @@ public class NeoProfiler {
 		CommandLineParser parser = new GnuParser();
 		
 		try { 
-			CommandLine line = parser.parse(makeCLIOptions(), args );
-			System.out.println(line);
+			CommandLine line = parser.parse(makeCLIOptions(), args );			
 			
 			String path = line.getOptionValue("db");
 			String format = line.getOptionValue("format");
@@ -166,6 +165,7 @@ public class NeoProfiler {
 			if(output == null) System.out.println(((StringWriter)destination).getBuffer());
 			else destination.close();
 			
+			System.out.println("Done.");
 			System.exit(0);
 		} catch(ParseException exc) {
 	        System.err.println(exc.getMessage());
@@ -187,6 +187,7 @@ public class NeoProfiler {
 		DBProfile profile = profiler.run();		
 		MarkdownMaker mm = new MarkdownMaker();
 		
+		System.out.println("Writing report...");
 		switch(fmt) { 
 		case JSON:
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();		
