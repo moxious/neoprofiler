@@ -18,11 +18,16 @@ public class NodesProfiler extends QueryRunner implements Profiler {
 		
 		for(Object l : labels) { 
 			// Schedule a new profiler to look into the particular label we just discovered.
-			parent.schedule(new LabelProfiler(""+l));
+			String labelTxt = ""+l;
+			
+			// If the database has no labels, then querying for them returns the empty set [].
+			// Don't try to schedule inspection of [] as a label, because that will bomb.
+			if(labelTxt != null && !"".equals(labelTxt) && !"[]".equals(labelTxt))
+				parent.schedule(new LabelProfiler(""+l));
 		}
 		
 		p.addObservation("Node Labels", labels);		
-		p.addObservation("Total Nodes", runQuerySingleResult(parent, "match n return count(n) as c", "c"));
+		p.addObservation(NeoProfile.OB_COUNT, runQuerySingleResult(parent, "match n return count(n) as c", "c"));
 		
 		return p;
 	} // End run
