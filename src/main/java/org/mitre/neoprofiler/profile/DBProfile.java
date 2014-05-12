@@ -19,6 +19,48 @@ public class DBProfile extends NeoProfile {
 	
 	public List<NeoProfile> getProfiles() { return profiles; } 
 	
+	public List<LabelProfile> getLabels() { 
+		ArrayList<LabelProfile> arr = new ArrayList<LabelProfile>();
+		
+		for(NeoProfile p : getProfiles())
+			if(p instanceof LabelProfile)
+				arr.add((LabelProfile)p);
+		
+		return arr;
+	}
+	
+	public List<RelationshipTypeProfile> getRelationshipTypes() { 
+		ArrayList<RelationshipTypeProfile> arr = new ArrayList<RelationshipTypeProfile>();
+		
+		for(NeoProfile p : getProfiles())
+			if(p instanceof RelationshipTypeProfile)
+				arr.add((RelationshipTypeProfile)p);
+		
+		return arr;
+	}
+	
+	public RelationshipTypeProfile getRelationshipTypeProfile(String type) { 
+		for(NeoProfile p : getProfiles()) { 
+			if(!(p instanceof RelationshipTypeProfile)) continue;
+			
+			if(type.equals(((RelationshipTypeProfile)p).getParameter("type"))) 
+				return ((RelationshipTypeProfile)p);
+		}
+		
+		return null;
+	}
+	
+	public LabelProfile getLabelProfile(String label) { 
+		for(NeoProfile p : getProfiles()) { 
+			if(!(p instanceof LabelProfile)) continue;
+			
+			if(label.equals(((LabelProfile)p).getParameter("label"))) 
+				return ((LabelProfile)p);
+		}
+		
+		return null;
+	}
+		
 	public void addProfile(NeoProfile profile) { 
 		profiles.add(profile);
 	}
