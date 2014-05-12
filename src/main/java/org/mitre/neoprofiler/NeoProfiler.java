@@ -1,10 +1,8 @@
 package org.mitre.neoprofiler;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -14,10 +12,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.mitre.neoprofiler.html.HTMLMaker;
 import org.mitre.neoprofiler.markdown.MarkdownMaker;
 import org.mitre.neoprofiler.profile.DBProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
@@ -25,6 +23,7 @@ import org.mitre.neoprofiler.profiler.NodesProfiler;
 import org.mitre.neoprofiler.profiler.Profiler;
 import org.mitre.neoprofiler.profiler.RelationshipsProfiler;
 import org.mitre.neoprofiler.profiler.SchemaProfiler;
+import org.mitre.neoprofiler.profiler.UnlabeledNodeProfiler;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
@@ -53,6 +52,7 @@ public class NeoProfiler {
 		DBProfile p = new DBProfile(storageLoc);
 		
 		schedule(new SchemaProfiler());
+		schedule(new UnlabeledNodeProfiler());
 		schedule(new NodesProfiler());
 		schedule(new RelationshipsProfiler());
 		
@@ -68,7 +68,9 @@ public class NeoProfiler {
 			try { 
 				prof = profiler.run(this);
 			} catch(Exception exc) { 
-				System.err.println(profiler.getClass().getName() + " failed.");
+				System.err.println(profiler.getClass().getName() + " failed:  " + exc.getMessage());
+				exc.printStackTrace();
+				x++;
 				continue;
 			}
 			long t2 = System.currentTimeMillis();
@@ -199,7 +201,7 @@ public class NeoProfiler {
 			break;
 			
 		case HTML:			
-			mm.html(profile, output);
+			new HTMLMaker().html(profile, output);
 			break;
 			
 		default:
