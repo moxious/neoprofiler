@@ -1,31 +1,31 @@
 package org.mitre.neoprofiler.profiler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.mitre.neoprofiler.NeoProfiler;
+import org.mitre.neoprofiler.profile.LabelProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
-import org.mitre.neoprofiler.profile.ParameterizedNeoProfile;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 public class LabelProfiler extends QueryRunner implements Profiler {
+	private static final Logger log = Logger.getLogger(LabelProfiler.class.getName());
 	String label = null;
-	
-	class LabelProfile extends ParameterizedNeoProfile {
-		public LabelProfile(String label) { 
-			name="Label '" + label + "'"; 
-			description="Profile of nodes labeled '" + label + "'";
-			setParameter("label", label);
-			setParameter("sampleSize", new Integer(100));
-		}
-	}
-	
+		
 	public LabelProfiler(String label) {
+		if(label == null || "".equals(label)) { 
+			log.severe("Invalid input label: '" + label + "'");
+		}
+		
 		this.label = label.replaceAll("\\[", "").replaceAll("\\]", "");
+		
+		if("".equals(this.label)) { 
+			log.severe("Invalid processed label '" + label + "' => '" + this.label + "'");
+		}
 	}
 	
 	public NeoProfile run(NeoProfiler parent) {		
@@ -62,20 +62,20 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 				else prop.setOptional(false); 
 			}
 			
-			p.addObservation("Sample properties", props);
+			p.addObservation(NeoProfile.OB_SAMPLE_PROPERTIES, props);
 		} // End try
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
 		
-		if(outbound.isEmpty()) outbound.add("N/A");
-		p.addObservation("Outbound relationship types", outbound);
+		if(outbound.isEmpty()) outbound.add(NeoProfile.OB_VALUE_NA);
+		p.addObservation(LabelProfile.OB_OUTBOUND_RELATIONSHIP_TYPES, outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
 				"match (n:" + label + ")<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
 		
-		if(inbound.isEmpty()) inbound.add("N/A");
-		p.addObservation("Inbound relationship types", inbound); 
+		if(inbound.isEmpty()) inbound.add(NeoProfile.OB_VALUE_NA);
+		p.addObservation(LabelProfile.OB_INBOUND_RELATIONSHIP_TYPES, inbound); 
 		
 		// TODO Auto-generated method stub
 		return p;
