@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class NeoProfile {
+	public static final String OB_COUNT = "Total";
+	public static final String OB_SAMPLE_PROPERTIES = "Sample properties";
+	public static final String OB_VALUE_NA = "N/A";
+	
 	protected String name;
 	protected String description;
 	protected HashMap<String,Object> observations = new HashMap<String,Object>();
@@ -14,6 +18,10 @@ public abstract class NeoProfile {
 	public String getDescription() { return description; } 
 	public Map<String,Object> getObservations() { return observations; } 
 	public void addObservation(String name, Object observation) { observations.put(name, observation); } 
+	
+	public boolean has(String observationName) { 
+		return observations.containsKey(observationName);
+	}
 	
 	public String toString() { 
 		StringBuffer b = new StringBuffer("");
