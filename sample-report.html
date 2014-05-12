@@ -1,52 +1,255 @@
 <!DOCTYPE html>
-<html><title>NeoProfile of /home/x/provenance.db/ generated 2014/05/06 15:41:16</title>
+<html>
+<head>
+	<title>Profile of /home/x/provenance.db/ generated 2014/05/12 09:16:58</title>
 
+<style>
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+#outbound {
+  fill: green;
+}
+
+#domain { fill: black; }
+#range { fill: black; } 
+
+#inbound {
+  fill: green;
+}
+
+.link.outbound {
+  stroke: green;
+}
+
+.link.inbound {
+  stroke: green;
+}
+
+.link.domain {
+  stroke: blue; 
+}
+
+.link range { 
+  stroke: blue;
+}
+
+.node { 
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+.relationship {
+  fill: #eee;
+  stroke: #111;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+</style>
+<body>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<div style="width: 75%; border-style: solid; margin-left:auto; margin-right:auto;" id='graph'>
+	<!-- D3 graph goes here. -->
+</div>
+
+<script>
+var links = [
+{source: '[Provenance]', target: 'REL: triggered', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: '[Provenance]', target: 'REL: contributed', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: '[Provenance]', target: 'REL: generated', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: '[Provenance]', target: 'REL: input to', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: '[Provenance]', target: 'REL: owns', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: 'REL: triggered', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: contributed', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: generated', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: input to', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: owns', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: '[PrivilegeClass]', target: 'REL: dominates', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: '[PrivilegeClass]', target: 'REL: controlledBy', head: 'node', tail: 'relationship', type: 'outbound'},
+{source: 'REL: dominates', target: '[PrivilegeClass]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: controlledBy', target: '[PrivilegeClass]', head: 'relationship', tail: 'node', type: 'inbound'},
+{source: 'REL: dominates', target: '[PrivilegeClass]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[PrivilegeClass]', target: 'REL: dominates', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: owns', target: '[Actor]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[Provenance]', target: 'REL: owns', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: triggered', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[Provenance]', target: 'REL: triggered', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: controlledBy', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[PrivilegeClass]', target: 'REL: controlledBy', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: contributed', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[Provenance]', target: 'REL: contributed', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: generated', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[Provenance]', target: 'REL: generated', head: 'node', tail: 'relationship', type: 'range'},
+{source: 'REL: input to', target: '[Provenance]', head: 'relationship', tail: 'node', type: 'domain'},
+{source: '[Provenance]', target: 'REL: input to', head: 'node', tail: 'relationship', type: 'range'},
+];
+
+
+var nodes = {};
+
+// Compute the distinct nodes from the links.
+links.forEach(function(link) {
+  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, type: link.head});
+  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, type: link.tail});
+});
+
+var width = 960,
+    height = 500;
+
+var force = d3.layout.force()
+    .nodes(d3.values(nodes))
+    .links(links)
+    .size([width, height])
+    .linkDistance(150)
+    .charge(-500)
+    .on("tick", tick)
+    .start();
+
+var svg = d3.select("#graph").append("svg")
+    .attr("width", "75%")
+    .attr("height", height);
+
+// Per-type markers, as they don't inherit styles.
+svg.append("defs").selectAll("marker")
+    .data(["outbound", "inbound", "domain", "range"])
+  .enter().append("marker")
+    .attr("id", function(d) { return d; })
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 10)
+    .attr("markerHeight", 10)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M 0,0 V 4 L6,2 Z");
+    // .attr("d", "M0,-5L10,0L0,5");
+
+var path = svg.append("g").selectAll("path")
+    .data(force.links())
+  .enter().append("path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });    
+    
+var drag = force.drag()
+    .on("dragstart", dragstart);    
+    
+var circle = svg.append("g").selectAll("circle")
+    .data(force.nodes())
+  .enter().append("circle")    
+    .attr("r", 20)
+    .attr("class", function(d) { return d.type; })
+    .on("dblclick", dblclick)
+    .call(drag);
+
+var text = svg.append("g").selectAll("text")
+    .data(force.nodes())
+  .enter().append("text")
+    .attr("x", 25)
+    .attr("y", ".5em")
+    .text(function(d) { return d.name; });
+
+function dblclick(d) {
+	d3.select(this).classed("fixed", d.fixed = false);
+}
+
+function dragstart(d) {
+  d3.select(this).classed("fixed", d.fixed = true);
+}
+
+// Use elliptical arc path segments to doubly-encode directionality.
+function tick() {
+  path.attr("d", linkArc);
+  circle.attr("transform", transform);
+  text.attr("transform", transform);
+}
+
+function linkArc(d) {
+  var dx = d.target.x - d.source.x,
+      dy = d.target.y - d.source.y,
+      dr = Math.sqrt(dx * dx + dy * dy);
+  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+}
+
+function transform(d) {
+  return "translate(" + d.x + "," + d.y + ")";
+}
+</script>
+
+<!-- Markdown content gets rendered by strapdown here. -->
 <xmp theme='spacelab' style='display:none;'>
 
-# NeoProfile of /home/user/provenance.db/ generated 2014/05/06 15:41:16
-/home/user/provenance.db/
+# Profile of /home/x/provenance.db/ generated 2014/05/12 09:16:58
+/home/x/provenance.db/
 
 ## Schema
-Information about Neo4J's database schema
+*Information about Neo4J's database schema*
 
 ### Indexes
-*  On nodes labeled Provenance.  Property keys:
+* Constraint  On nodes labeled Provenance.  Property keys:
     * oid
-*  On nodes labeled Actor.  Property keys:
+* Constraint  On nodes labeled Actor.  Property keys:
     * aid
-*  On nodes labeled PrivilegeClass.  Property keys:
+* Constraint  On nodes labeled PrivilegeClass.  Property keys:
     * pid
-*  On nodes labeled NonProvenance.  Property keys:
+* Constraint  On nodes labeled NonProvenance.  Property keys:
     * npid
 
-### Non-Index
-* Type UNIQUENESS On nodes labeled Provenance.  Property keys:
+### Non-Index Constraints
+* Constraint Type UNIQUENESS On nodes labeled Provenance.  Property keys:
     * oid
-* Type UNIQUENESS On nodes labeled Actor.  Property keys:
+* Constraint Type UNIQUENESS On nodes labeled Actor.  Property keys:
     * aid
-* Type UNIQUENESS On nodes labeled PrivilegeClass.  Property keys:
+* Constraint Type UNIQUENESS On nodes labeled PrivilegeClass.  Property keys:
     * pid
-* Type UNIQUENESS On nodes labeled NonProvenance.  Property keys:
+* Constraint Type UNIQUENESS On nodes labeled NonProvenance.  Property keys:
     * npid
 
 ### Observations
-* Run Time (ms): 4
+* Run Time (ms): 3
+
+
+## Label '(Unlabeled)'
+*Profile of nodes labeled '(Unlabeled)'*
+
+### Observations
+* Outbound relationship types: 
+    * N/A
+* Run Time (ms): 2340
+* Sample properties: 
+* Total: 0
 
 
 ## Nodes
-Summary statistics about nodes in the graph
+*Summary statistics about nodes in the graph*
 
 ### Observations
 * Node Labels: 
     * [Provenance]
     * [Actor]
     * [PrivilegeClass]
-* Run Time (ms): 2622
-* Total Nodes: 13266
+* Run Time (ms): 239
+* Total: 13266
 
 
 ## Relationships
-Summary statistics about relationships in the graph
+*Summary statistics about relationships in the graph*
 
 ### Observations
 * Available Relationship Types: 
@@ -57,86 +260,78 @@ Summary statistics about relationships in the graph
     * contributed
     * generated
     * input to
-* Run Time (ms): 827
+* Run Time (ms): 268
 * Total Relationships: 11948
 
 
-## NodeProfile
-Profile of nodes labeled 'Provenance'
+## Label 'Provenance'
+*Profile of nodes labeled 'Provenance'*
 
 ### Observations
-* Inbound relationship types: 
+* Outbound relationship types: 
     * triggered
     * contributed
     * generated
     * input to
     * owns
-* Outbound relationship types: 
-    * triggered
-    * controlledBy
-    * contributed
-    * input to
-    * generated
-* Run Time (ms): 465
+* Run Time (ms): 441
 * Sample properties: 
-    * when_end (String) optional
-    * content (String) optional
-    * type (String) required
-    * SGFs (String[]) optional
-    * certainty (String) required
-    * created (Long) required
-    * when_start (String) optional
     * oid (String) required
-    * activity (String) optional
-    * subtype (String) required
+    * when_start (String) optional
     * workflow (String) optional
     * name (String) required
+    * SGFs (String[]) optional
+    * subtype (String) required
     * ownerid (String) required
+    * when_end (String) optional
+    * certainty (String) required
+    * activity (String) optional
+    * type (String) required
+    * content (String) optional
+    * created (Long) required
     * metadata:implus:motif (String) optional
 * Total nodes: 13225
 
 
-## NodeProfile
-Profile of nodes labeled 'Actor'
+## Label 'Actor'
+*Profile of nodes labeled 'Actor'*
 
 ### Observations
-* Inbound relationship types: 
 * Outbound relationship types: 
-    * owns
-* Run Time (ms): 50
+    * N/A
+* Run Time (ms): 44
 * Sample properties: 
-    * displayName (String) optional
-    * aid (String) optional
-    * type (String) optional
-    * name (String) optional
     * created (Long) optional
+    * aid (String) optional
+    * name (String) optional
+    * type (String) optional
+    * displayName (String) optional
 * Total nodes: 25
 
 
-## NodeProfile
-Profile of nodes labeled 'PrivilegeClass'
+## Label 'PrivilegeClass'
+*Profile of nodes labeled 'PrivilegeClass'*
 
 ### Observations
-* Inbound relationship types: 
-    * dominates
-    * controlledBy
 * Outbound relationship types: 
     * dominates
-* Run Time (ms): 36
+    * controlledBy
+* Run Time (ms): 41
 * Sample properties: 
-    * created (Long) optional
     * name (String) optional
-    * description (String) optional
-    * pid (String) optional
     * type (String) optional
+    * pid (String) optional
+    * created (Long) optional
+    * description (String) optional
 * Total nodes: 16
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'dominates'
+## Relationships Typed 'dominates'
+*Profile of relationships of type 'dominates'*
 
 ### Observations
-* Run Time (ms): 139
+* Run Time (ms): 190
+* Sample properties: 
 * Total relationships: 16
 * domain: 
     * PrivilegeClass
@@ -144,11 +339,12 @@ Profile of relationships of type 'dominates'
     * PrivilegeClass
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'owns'
+## Relationships Typed 'owns'
+*Profile of relationships of type 'owns'*
 
 ### Observations
-* Run Time (ms): 96
+* Run Time (ms): 132
+* Sample properties: 
 * Total relationships: 77
 * domain: 
     * Actor
@@ -156,11 +352,13 @@ Profile of relationships of type 'owns'
     * Provenance
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'triggered'
+## Relationships Typed 'triggered'
+*Profile of relationships of type 'triggered'*
 
 ### Observations
-* Run Time (ms): 98
+* Run Time (ms): 108
+* Sample properties: 
+    * workflow (String) required
 * Total relationships: 1257
 * domain: 
     * Provenance
@@ -168,11 +366,12 @@ Profile of relationships of type 'triggered'
     * Provenance
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'controlledBy'
+## Relationships Typed 'controlledBy'
+*Profile of relationships of type 'controlledBy'*
 
 ### Observations
-* Run Time (ms): 91
+* Run Time (ms): 80
+* Sample properties: 
 * Total relationships: 178
 * domain: 
     * Provenance
@@ -180,11 +379,13 @@ Profile of relationships of type 'controlledBy'
     * PrivilegeClass
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'contributed'
+## Relationships Typed 'contributed'
+*Profile of relationships of type 'contributed'*
 
 ### Observations
-* Run Time (ms): 75
+* Run Time (ms): 93
+* Sample properties: 
+    * workflow (String) required
 * Total relationships: 483
 * domain: 
     * Provenance
@@ -192,11 +393,13 @@ Profile of relationships of type 'contributed'
     * Provenance
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'generated'
+## Relationships Typed 'generated'
+*Profile of relationships of type 'generated'*
 
 ### Observations
-* Run Time (ms): 98
+* Run Time (ms): 114
+* Sample properties: 
+    * workflow (String) required
 * Total relationships: 2911
 * domain: 
     * Provenance
@@ -204,11 +407,13 @@ Profile of relationships of type 'generated'
     * Provenance
 
 
-## RelationshipTypeProfile
-Profile of relationships of type 'input to'
+## Relationships Typed 'input to'
+*Profile of relationships of type 'input to'*
 
 ### Observations
-* Run Time (ms): 133
+* Run Time (ms): 139
+* Sample properties: 
+    * workflow (String) required
 * Total relationships: 7026
 * domain: 
     * Provenance
@@ -216,6 +421,8 @@ Profile of relationships of type 'input to'
     * Provenance
 
 
-</xmp>
+</xmp>		
+
 <script src='http://strapdownjs.com/v/0.2/strapdown.js'></script>
-<html>
+</body>		
+</html>

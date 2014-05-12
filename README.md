@@ -42,6 +42,16 @@ The program knows how to output JSON, Markdown, and HTML as output.   To see
 a sample HTML report, download [sample-report.html](sample-report.html) and
 view it in a browser.
 
+## Metagraphs
+
+One of the things that the profiler outputs is what we call a "metagraph".  Neo4J
+database structures themselves can be described as a graph.  The nodes in the metagraph
+describe what kinds of labeled nodes, relationships, and so on are in your database.
+The relationships in the metagraph outline how these things connect.
+
+An example and picture of a metagraph can be [found here](https://imgur.com/qsPvQFY).  
+A longer discussion of metagraphs can be [found here](http://gist.neo4j.org/?8640853).
+
 ## FAQ
 
 ### How does it work?
