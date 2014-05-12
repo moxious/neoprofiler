@@ -49,7 +49,19 @@ database structures themselves can be described as a graph.  The nodes in the me
 describe what kinds of labeled nodes, relationships, and so on are in your database.
 The relationships in the metagraph outline how these things connect.
 
-An example and picture of a metagraph can be [found here](https://imgur.com/qsPvQFY).  
+Here's an example of a [metagraph](https://imgur.com/qsPvQFY).
+
+<img src="https://i.imgur.com/qsPvQFY.png" alt="Metagraph"/>
+
+Notice that there are lighter grey and darker grey nodes; the light grey nodes whose label
+starts with "REL" are actually referring to relationships in the neo4j database.  This 
+graph indicates that nodes labeled "emp" can have a "leads_project" relationship to nodes
+labeled "project".   Additionally, "project" nodes themselves can have a "leads_project"
+relationship to other "project" nodes.   
+
+Nodes labeled "dept" can have "part_of" relationships back to other "dept" nodes; this is
+what a hierarchy might look like as expressed via a metagraph. 
+  
 A longer discussion of metagraphs can be [found here](http://gist.neo4j.org/?8640853).
 
 ## FAQ
