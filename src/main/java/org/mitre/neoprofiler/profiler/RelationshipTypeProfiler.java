@@ -9,7 +9,7 @@ import java.util.Map;
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
-import org.mitre.neoprofiler.profile.ParameterizedNeoProfile;
+import org.mitre.neoprofiler.profile.RelationshipTypeProfile;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -21,15 +21,6 @@ import org.neo4j.graphdb.Transaction;
  */
 public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 	String type = null;
-	
-	class RelationshipTypeProfile extends ParameterizedNeoProfile {
-		public RelationshipTypeProfile(String type) { 
-			name="Relationships Typed '" + type + "'"; 
-			description="Profile of relationships of type '" + type + "'";
-			setParameter("type", type);			
-			setParameter("sampleSize", new Integer(100));
-		}
-	}
 	
 	public RelationshipTypeProfiler(String type) {
 		this.type = type;
@@ -71,7 +62,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 				else prop.setOptional(false); 
 			}
 			
-			p.addObservation("Sample properties", props);
+			p.addObservation(NeoProfile.OB_SAMPLE_PROPERTIES, props);
 			
 			HashSet<String> labels = new HashSet<String>();
 			
@@ -80,7 +71,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 				while(headLabels.hasNext()) labels.add(headLabels.next().name());				
 			}
 			
-			p.addObservation("domain", labels); 
+			p.addObservation(RelationshipTypeProfile.OB_DOMAIN, labels); 
 						
 			labels = new HashSet<String>();
 			for(Object tailNode : ret.get("right")) {
@@ -88,7 +79,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 				while(tailLabels.hasNext()) labels.add(tailLabels.next().name());				
 			}
 			
-			p.addObservation("range", labels); 			
+			p.addObservation(RelationshipTypeProfile.OB_RANGE, labels); 			
 		} // End try
 			
 		return p;
