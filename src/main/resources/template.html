@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>$title</title>
+
+<style>
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+#outbound {
+  fill: green;
+}
+
+#domain { fill: black; }
+#range { fill: black; } 
+
+#inbound {
+  fill: green;
+}
+
+.link.outbound {
+  stroke: green;
+}
+
+.link.inbound {
+  stroke: green;
+}
+
+.link.domain {
+  stroke: blue; 
+}
+
+.link range { 
+  stroke: blue;
+}
+
+.node { 
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+.relationship {
+  fill: #eee;
+  stroke: #111;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+</style>
+<body>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<div style="width: 75%; border-style: solid; margin-left:auto; margin-right:auto;" id='graph'>
+	<!-- D3 graph goes here. -->
+</div>
+
+<script>
+$links
+
+var nodes = {};
+
+// Compute the distinct nodes from the links.
+links.forEach(function(link) {
+  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, type: link.head});
+  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, type: link.tail});
+});
+
+var width = 960,
+    height = 500;
+
+var force = d3.layout.force()
+    .nodes(d3.values(nodes))
+    .links(links)
+    .size([width, height])
+    .linkDistance(150)
+    .charge(-500)
+    .on("tick", tick)
+    .start();
+
+var svg = d3.select("#graph").append("svg")
+    .attr("width", "75%")
+    .attr("height", height);
+
+// Per-type markers, as they don't inherit styles.
+svg.append("defs").selectAll("marker")
+    .data(["outbound", "inbound", "domain", "range"])
+  .enter().append("marker")
+    .attr("id", function(d) { return d; })
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 10)
+    .attr("markerHeight", 10)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M 0,0 V 4 L6,2 Z");
+    // .attr("d", "M0,-5L10,0L0,5");
+
+var path = svg.append("g").selectAll("path")
+    .data(force.links())
+  .enter().append("path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });    
+    
+var drag = force.drag()
+    .on("dragstart", dragstart);    
+    
+var circle = svg.append("g").selectAll("circle")
+    .data(force.nodes())
+  .enter().append("circle")    
+    .attr("r", 20)
+    .attr("class", function(d) { return d.type; })
+    .on("dblclick", dblclick)
+    .call(drag);
+
+var text = svg.append("g").selectAll("text")
+    .data(force.nodes())
+  .enter().append("text")
+    .attr("x", 25)
+    .attr("y", ".5em")
+    .text(function(d) { return d.name; });
+
+function dblclick(d) {
+	d3.select(this).classed("fixed", d.fixed = false);
+}
+
+function dragstart(d) {
+  d3.select(this).classed("fixed", d.fixed = true);
+}
+
+// Use elliptical arc path segments to doubly-encode directionality.
+function tick() {
+  path.attr("d", linkArc);
+  circle.attr("transform", transform);
+  text.attr("transform", transform);
+}
+
+function linkArc(d) {
+  var dx = d.target.x - d.source.x,
+      dy = d.target.y - d.source.y,
+      dr = Math.sqrt(dx * dx + dy * dy);
+  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+}
+
+function transform(d) {
+  return "translate(" + d.x + "," + d.y + ")";
+}
+</script>
+
+<!-- Markdown content gets rendered by strapdown here. -->
+<xmp theme='spacelab' style='display:none;'>
+$markdown
+</xmp>		
+
+<script src='http://strapdownjs.com/v/0.2/strapdown.js'></script>
+</body>		
+</html>
