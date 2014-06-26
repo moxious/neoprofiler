@@ -3,19 +3,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
 	<artifactId>neoprofiler</artifactId>
-	<version>0.12</version>
+	<version>0.13</version>
 	<name>Neo4J Database Profiler</name>
 	<description>Software which can examine Neo4J databases and build descriptions of their contents.</description>
 	<dependencies>
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j</artifactId>
-			<version>2.1.2</version>
+			<version>${neo4j-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-cypher</artifactId>
-			<version>2.1.2</version>
+			<version>${neo4j-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -99,4 +99,14 @@
 			<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
 		</pluginRepository>
 	</pluginRepositories>	
+	<scm>
+		<url>https://github.com/moxious/neoprofiler</url>
+	</scm>
+	<url>https://github.com/moxious/neoprofiler</url>
+	<issueManagement>
+		<url>https://github.com/moxious/neoprofiler/issues</url>
+	</issueManagement>
+	<properties>
+		<neo4j-version>2.1.2</neo4j-version>
+	</properties>
 </project>
