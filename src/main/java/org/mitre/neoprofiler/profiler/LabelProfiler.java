@@ -59,7 +59,9 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 				int count = seen.get(prop.toString());
 				System.out.println("For label " + label + " property " + prop + " seen " + count + " of " + sampleSize + " times.");
 				if(count < sampleSize) prop.setOptional(true);
-				else prop.setOptional(false); 
+				else prop.setOptional(false);
+				
+				parent.schedule(new LabelPropertyProfiler(label, prop.getName()));
 			}
 			
 			p.addObservation(NeoProfile.OB_SAMPLE_PROPERTIES, props);
