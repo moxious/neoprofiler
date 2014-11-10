@@ -68,13 +68,13 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		} // End try
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
-				"match (n:" + label + ")-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(outbound.isEmpty()) outbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_OUTBOUND_RELATIONSHIP_TYPES, outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
-				"match (n:" + label + ")<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(inbound.isEmpty()) inbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_INBOUND_RELATIONSHIP_TYPES, inbound); 
