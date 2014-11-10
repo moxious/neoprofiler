@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
 	<artifactId>neoprofiler</artifactId>
-	<version>0.13</version>
+	<version>0.14</version>
 	<name>Neo4J Database Profiler</name>
 	<description>Software which can examine Neo4J databases and build descriptions of their contents.</description>
 	<dependencies>
@@ -107,6 +107,6 @@
 		<url>https://github.com/moxious/neoprofiler/issues</url>
 	</issueManagement>
 	<properties>
-		<neo4j-version>2.1.4</neo4j-version>
+		<neo4j-version>2.1.5</neo4j-version>
 	</properties>
 </project>
