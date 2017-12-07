@@ -10,7 +10,7 @@ import org.mitre.neoprofiler.profile.LabelProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.driver.v1.Transaction;
 
 public class LabelProfiler extends QueryRunner implements Profiler {
 	private static final Logger log = Logger.getLogger(LabelProfiler.class.getName());
@@ -38,7 +38,7 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:`" + label + "`) return n as instance limit " + sampleSize, 
 				"instance");
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		try ( Transaction tx = parent.getDriver().session().beginTransaction() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			

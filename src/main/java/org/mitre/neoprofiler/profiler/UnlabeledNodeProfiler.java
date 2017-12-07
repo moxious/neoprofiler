@@ -9,7 +9,7 @@ import org.mitre.neoprofiler.profile.LabelProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.driver.v1.Transaction;
 
 public class UnlabeledNodeProfiler extends LabelProfiler {
 	public static final String PARAMETER_LABEL = "(Unlabeled)";
@@ -29,7 +29,7 @@ public class UnlabeledNodeProfiler extends LabelProfiler {
 		List<Object>nodeSamples = runQueryMultipleResult(parent, "match n where labels(n)=[] return n as instance limit " + sampleSize, 
 				"instance");
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		try ( Transaction tx = parent.beginTx() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			

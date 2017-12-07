@@ -13,7 +13,7 @@ import org.mitre.neoprofiler.profile.RelationshipTypeProfile;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.driver.v1.Transaction;
 
 /**
  * Profiler for a particular relationship type.
@@ -38,7 +38,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 				"match n-[r:`" + type + "`]->m return n as left, m as right, r as rel limit " + sampleSize, 
 				"right", "left", "rel");
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		try ( Transaction tx = parent.beginTx() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
