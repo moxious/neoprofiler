@@ -15,6 +15,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.types.Relationship;
 import org.neo4j.driver.v1.Value;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
 
 /**
  * Profiler for a particular relationship type.
@@ -35,16 +37,21 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 		Object result = runQuerySingleResult(parent, "match (n)-[r:`" + type + "`]->(m) return count(r) as c", "c");
 		p.addObservation("Total relationships", ""+result);
 		
-		Map<String,List<Object>> ret = runQueryComplexResult(parent,
-				"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize, 
-				"right", "left", "rel");
+		Session s = parent.getDriver().session();
+		StatementResult stmtResult = s.run(
+			"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize);
+
+		// Map<String,List<Object>> ret = runQueryComplexResult(parent,
+		// 		"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize, 
+		// 		"right", "left", "rel");
 		
 		try ( Transaction tx = parent.beginTx() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
-			for(Object r : ret.get("rel")) { 				
-				for(NeoProperty prop : getSampleProperties(parent, ((Value)r).asRelationship())) {
+			while(stmtResult.hasNext()) {
+				Value r = stmtResult.next().get("rel");
+				for(NeoProperty prop : getSampleProperties(parent, r.asRelationship())) {
 					String key = prop.toString();
 					
 					// Increment counter.
