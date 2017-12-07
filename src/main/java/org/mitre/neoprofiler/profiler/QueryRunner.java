@@ -20,6 +20,7 @@ import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.TransactionWork;
+import org.neo4j.driver.v1.types.Entity;
 
 /**
  * Abstract class that contains various query running utilities to make implementation of downstream profilers easier.
@@ -28,16 +29,16 @@ import org.neo4j.driver.v1.TransactionWork;
 public abstract class QueryRunner {
 	protected static final Logger log = Logger.getLogger(QueryRunner.class.getName());
 				
-	public List<NeoProperty> getSampleProperties(NeoProfiler parent, PropertyContainer n) {
+	public List<NeoProperty> getSampleProperties(NeoProfiler parent, Entity n) {
 		List<NeoProperty> props = new ArrayList<NeoProperty>();
 		
 		Session s = parent.getDriver().session();
 		try ( Transaction tx = s.beginTransaction() ) {			 
-			Iterator<String> propKeys = n.getPropertyKeys().iterator();
+			Iterator<String> propKeys = n.keys().iterator();
 			
 			while(propKeys.hasNext()) {
 				String key = propKeys.next();
-				Object val = n.getProperty(key);
+				Object val = n.get(key);
 				
 				props.add(new NeoProperty(key, val.getClass().getSimpleName()));				
 			}
@@ -66,7 +67,9 @@ public abstract class QueryRunner {
 					if(!all.containsKey(col)) all.put(col, new ArrayList<Object>());
 					all.get(col).add(row.get(col));
 				}
-			}			
+			}	
+			
+			tx.close();
 		} finally {
 			s.close();
 		}

@@ -12,8 +12,9 @@ import org.mitre.neoprofiler.profile.NeoProperty;
 import org.mitre.neoprofiler.profile.RelationshipTypeProfile;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.driver.v1.Value;
 
 /**
  * Profiler for a particular relationship type.
@@ -31,11 +32,11 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 		
 		int sampleSize = (Integer)p.getParameter("sampleSize");
 		
-		Object result = runQuerySingleResult(parent, "match n-[r:`" + type + "`]->m return count(r) as c", "c");
+		Object result = runQuerySingleResult(parent, "match (n)-[r:`" + type + "`]->(m) return count(r) as c", "c");
 		p.addObservation("Total relationships", ""+result);
 		
 		Map<String,List<Object>> ret = runQueryComplexResult(parent,
-				"match n-[r:`" + type + "`]->m return n as left, m as right, r as rel limit " + sampleSize, 
+				"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize, 
 				"right", "left", "rel");
 		
 		try ( Transaction tx = parent.beginTx() ) {
@@ -43,7 +44,7 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
 			for(Object r : ret.get("rel")) { 				
-				for(NeoProperty prop : getSampleProperties(parent, (Relationship)r)) {
+				for(NeoProperty prop : getSampleProperties(parent, ((Value)r).asRelationship())) {
 					String key = prop.toString();
 					
 					// Increment counter.

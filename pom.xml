@@ -50,26 +50,20 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>1.4.2.RELEASE</version>
+				<configuration>
+					<executable>true</executable>
+					<mainClass>org.mitre.neoprofiler.NeoProfiler</mainClass>
+					<layout>ZIP</layout>
+				</configuration>				
+				<executions>
+					<execution>
+					<goals>
+						<goal>repackage</goal>
+					</goals>
+					</execution>
+				</executions>				
 			</plugin>
 				
-			<!-- Appsembler plugin: see http://mojo.codehaus.org/appassembler/appassembler-maven-plugin/usage-program.html -->
-			<!-- This plugin generates scripts that permit main methods in various 
-				java programs to be run as stand-alone programs -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>appassembler-maven-plugin</artifactId>
-				<version>1.7</version>
-				<configuration>
-					<programs>
-						<program>
-							<mainClass>org.mitre.neoprofiler.NeoProfiler</mainClass>
-							<id>NeoProfiler</id>
-						</program>
-					</programs>
-				</configuration>
-			</plugin>
-			
-
 		      <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-compiler-plugin</artifactId>

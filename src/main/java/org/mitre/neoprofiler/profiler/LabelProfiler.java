@@ -11,6 +11,7 @@ import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.graphdb.Node;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.Value;
 
 public class LabelProfiler extends QueryRunner implements Profiler {
 	private static final Logger log = Logger.getLogger(LabelProfiler.class.getName());
@@ -43,7 +44,7 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
 			for(Object ns : nodeSamples) { 				
-				for(NeoProperty prop : getSampleProperties(parent, (Node)ns)) {
+				for(NeoProperty prop : getSampleProperties(parent, ((Value)ns).asNode())) {
 					String key = prop.toString();
 					
 					// Increment counter.
@@ -68,13 +69,13 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		} // End try
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
-				"match (n:`" + label + "`)-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)-[r]->(m) where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(outbound.isEmpty()) outbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_OUTBOUND_RELATIONSHIP_TYPES, outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
-				"match (n:`" + label + "`)<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)<-[r]-(m) where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(inbound.isEmpty()) inbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_INBOUND_RELATIONSHIP_TYPES, inbound); 

@@ -149,21 +149,6 @@ public class NeoProfiler {
 				System.err.println("Invalid or unrecognized format '" + format + "': using default of html");
 			}
 			
-			if(!f.exists()) {
-				System.err.println("Specified database at " + path + ": path does not exist.");
-				usage();
-				System.exit(1);
-			} else if(!f.isDirectory()) {
-				System.out.println("Specified database at " + path + ": path does not refer to a directory.");
-				usage();
-				System.exit(1);				
-			} else if(path.contains("http:")) {
-				System.err.println("HTTP endpoints are not yet supported.");
-				usage();
-				System.exit(1);
-			} 
-
-			
 			if(output != null) {
 				try { destination = new FileWriter(output); }
 				catch(IOException exc) { 
