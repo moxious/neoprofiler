@@ -19,9 +19,11 @@ public class RelationshipsProfiler extends QueryRunner implements Profiler {
 
 		for(Object relType : relTypes) {
 			String relTypeName = ""+relType;
+
 			if (relTypeName.charAt(0) == '"' && relTypeName.charAt(relTypeName.length() - 1) == '"') {
 				relTypeName = relTypeName.substring(1, relTypeName.length() - 1);
 			}
+
 			parent.schedule(new RelationshipTypeProfiler(relTypeName));
 		}
 		

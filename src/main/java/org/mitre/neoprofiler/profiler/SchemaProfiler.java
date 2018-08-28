@@ -1,6 +1,8 @@
 package org.mitre.neoprofiler.profiler;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoConstraint;
@@ -22,31 +24,17 @@ public class SchemaProfiler extends QueryRunner implements Profiler {
 	public NeoProfile run(NeoProfiler parent) {
 		SchemaProfile p = new SchemaProfile();
 		
-		Session s = parent.getDriver().session();
-		StatementResult result = s.run("CALL db.schema()");
+		Map<String,List<Object>> indexes = runQueryComplexResult(parent, "call db.indexes();", "description", "state", "type");
+		Map<String,List<Object>> constraints = runQueryComplexResult(parent, "call db.constraints();", "description");
 
-		while(result.hasNext()) {
-			Record r = result.next();
-			// Blah fix later
+		for(Object index : indexes.get("description")) {
+			p.addConstraint(new NeoConstraint("" + index, true));
 		}
-		/*
-		try(Transaction tx = s.beginTransaction()) {
-			Schema schema = parent.getDB().schema();
-		
-			Iterator<ConstraintDefinition> constraints = schema.getConstraints().iterator();
-						
-			while(constraints.hasNext()) {			
-				ConstraintDefinition c = constraints.next();				
-				p.addConstraint(new NeoConstraint(true, false, c.getPropertyKeys(), c.getLabel(), c.getConstraintType()));				
-			}
-						
-			Iterator<IndexDefinition> idxs = schema.getIndexes().iterator();
-			while(idxs.hasNext()) {
-				IndexDefinition idx = idxs.next();
-				p.addConstraint(new NeoConstraint(idx.isConstraintIndex(), true, idx.getPropertyKeys(), idx.getLabel(), null));				
-			}
+
+		for(Object constraint : constraints.get("description")) {
+			p.addConstraint(new NeoConstraint(""+constraint));
 		}
-		*/
+
 		return p;
 	}
 
