@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
 	<artifactId>neoprofiler</artifactId>
-	<version>0.14</version>
+	<version>0.15</version>
 	<name>Neo4J Database Profiler</name>
 	<description>Software which can examine Neo4J databases and build descriptions of their contents.</description>
 	<dependencies>
