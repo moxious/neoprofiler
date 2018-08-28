@@ -15,7 +15,7 @@ public class NodesProfiler extends QueryRunner implements Profiler {
 	public NeoProfile run(NeoProfiler parent) {
 		NodesProfile p = new NodesProfile();
 
-		List<Object> labels = runQueryMultipleResult(parent, "match n return distinct(labels(n)) as labels", "labels");
+		List<Object> labels = runQueryMultipleResult(parent, "match (n) return distinct(labels(n)) as labels", "labels");
 
 		for(Object l : labels) {
 			String labelTxt;
@@ -36,8 +36,12 @@ public class NodesProfiler extends QueryRunner implements Profiler {
 		}
 
 		p.addObservation("Node Labels", labels);
-		p.addObservation(NeoProfile.OB_COUNT, runQuerySingleResult(parent, "match n return count(n) as c", "c"));
+		p.addObservation(NeoProfile.OB_COUNT, runQuerySingleResult(parent, "match (n) return count(n) as c", "c"));
 
 		return p;
 	} // End run
+
+	public String describe() {
+		return "NodesProfiler";
+	}
 } // End NodesProfiler

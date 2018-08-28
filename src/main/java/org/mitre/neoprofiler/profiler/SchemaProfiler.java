@@ -1,12 +1,17 @@
 package org.mitre.neoprofiler.profiler;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoConstraint;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.SchemaProfile;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Record;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
@@ -19,22 +24,21 @@ public class SchemaProfiler extends QueryRunner implements Profiler {
 	public NeoProfile run(NeoProfiler parent) {
 		SchemaProfile p = new SchemaProfile();
 		
-		try(Transaction tx = parent.getDB().beginTx()) {
-			Schema schema = parent.getDB().schema();
-		
-			Iterator<ConstraintDefinition> constraints = schema.getConstraints().iterator();
-						
-			while(constraints.hasNext()) {			
-				ConstraintDefinition c = constraints.next();				
-				p.addConstraint(new NeoConstraint(true, false, c.getPropertyKeys(), c.getLabel(), c.getConstraintType()));				
-			}
-						
-			Iterator<IndexDefinition> idxs = schema.getIndexes().iterator();
-			while(idxs.hasNext()) {
-				IndexDefinition idx = idxs.next();
-				p.addConstraint(new NeoConstraint(idx.isConstraintIndex(), true, idx.getPropertyKeys(), idx.getLabel(), null));				
-			}
+		Map<String,List<Object>> indexes = runQueryComplexResult(parent, "call db.indexes();", "description", "state", "type");
+		Map<String,List<Object>> constraints = runQueryComplexResult(parent, "call db.constraints();", "description");
+
+		for(Object index : indexes.get("description")) {
+			p.addConstraint(new NeoConstraint("" + index, true));
 		}
+
+		for(Object constraint : constraints.get("description")) {
+			p.addConstraint(new NeoConstraint(""+constraint));
+		}
+
 		return p;
+	}
+
+	public String describe() {
+		return "SchemaProfiler";
 	}
 }

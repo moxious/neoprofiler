@@ -19,5 +19,9 @@ public class PathsProfiler extends QueryRunner implements Profiler {
 			name = "PathsProfile";
 			description = "Profile of various paths of interest through this graph.";
 		}
-	}	
+	}
+
+	public String describe() {
+		return "PathsProfiler";
+	}
 } // End PathsProfiler

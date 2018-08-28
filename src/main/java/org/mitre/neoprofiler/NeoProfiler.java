@@ -27,22 +27,38 @@ import org.mitre.neoprofiler.profiler.UnlabeledNodeProfiler;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
+import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.TransactionWork;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class NeoProfiler {
-	protected GraphDatabaseService svc = null;
+	protected Driver driver = null;
 	protected String storageLoc = null;
+	protected Session session = null;
 	protected List<Profiler> schedule = new ArrayList<Profiler>();
 	
 	public enum Format { MARKDOWN, HTML, JSON };
 	
-	public NeoProfiler(String storageLoc, GraphDatabaseService svc) { 
-		this.svc = svc;
+	public NeoProfiler(String storageLoc, Driver driver) { 
+		this.driver = driver;
 		this.storageLoc = storageLoc;
 	}
-	
-	public GraphDatabaseService getDB() { return svc; } 
+
+	public Driver getDriver() { return driver; } 
+	public Transaction beginTx() {
+		if (this.session == null) {
+			this.session = driver.session();
+		}
+
+		return this.session.beginTransaction();
+	}
 	
 	public void schedule(Profiler p) { 
 		schedule.add(p);
@@ -60,7 +76,7 @@ public class NeoProfiler {
 		
 		while(x < schedule.size()) {
 			Profiler profiler = schedule.get(x);
-			System.out.println("Running " + profiler.getClass().getSimpleName() + " (" + (x+1) + " of " + schedule.size() + ")");
+			System.out.println("Running " + profiler.describe() + " (" + (x+1) + " of " + schedule.size() + ")");
 			long t1 = System.currentTimeMillis();
 			
 			NeoProfile prof = null;
@@ -133,21 +149,6 @@ public class NeoProfiler {
 				System.err.println("Invalid or unrecognized format '" + format + "': using default of html");
 			}
 			
-			if(!f.exists()) {
-				System.err.println("Specified database at " + path + ": path does not exist.");
-				usage();
-				System.exit(1);
-			} else if(!f.isDirectory()) {
-				System.out.println("Specified database at " + path + ": path does not refer to a directory.");
-				usage();
-				System.exit(1);				
-			} else if(path.contains("http:")) {
-				System.err.println("HTTP endpoints are not yet supported.");
-				usage();
-				System.exit(1);
-			} 
-
-			
 			if(output != null) {
 				try { destination = new FileWriter(output); }
 				catch(IOException exc) { 
@@ -182,9 +183,13 @@ public class NeoProfiler {
 	}
 	
 	public static void profile(String path, Format fmt, Writer output) throws IOException {
-		GraphDatabaseService svc = new GraphDatabaseFactory().newEmbeddedDatabase(path);
+		String uri = "bolt://localhost";
+		String user = "neo4j";
+		String password = "admin";
+
+		Driver driver = GraphDatabase.driver(uri, AuthTokens.basic( user, password ) );
 		
-		NeoProfiler profiler = new NeoProfiler(path, svc);
+		NeoProfiler profiler = new NeoProfiler(path, driver);
 		
 		DBProfile profile = profiler.run();		
 		MarkdownMaker mm = new MarkdownMaker();

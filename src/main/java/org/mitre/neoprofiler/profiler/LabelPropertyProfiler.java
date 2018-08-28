@@ -19,9 +19,12 @@ public class LabelPropertyProfiler extends QueryRunner implements Profiler {
 		
 		// Determine how many unique observations 
 		prof.addObservation(LabelPropertyProfile.OB_CARDINALITY, 
-				runQuerySingleResult(parent, "match (n:" + label + ") return count(distinct(n." + property +")) as n", "n"));
-		
+				runQuerySingleResult(parent, "match (n:`" + label + "`) return count(distinct(n.`" + property +"`)) as n", "n"));
 		
 		return prof;
+	}
+
+	public String describe() {
+		return "LabelPropertyProfiler - (:" + label + " { " + property + " })";
 	}
 }

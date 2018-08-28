@@ -71,18 +71,7 @@ public class MarkdownMaker {
 		if(constraints.isEmpty()) b.append("**None found**");
 		else {
 			for(NeoConstraint con : constraints) {
-				String type = (con.type == null ? "" : "Type " + con.type);
-				String lab = ((!"".equals(con.label) && con.label != null) ? "On nodes labeled " + con.label : ""); 
-				
-				b.append("* Constraint " + type + " " + lab);
-				
-				if(con.propertyKeys.isEmpty()) b.append("\n");
-				else {
-					b.append(".  Property keys:\n");
-					for(String pk : con.propertyKeys) { 
-						b.append("    * " + pk + "\n");
-					}
-				}				
+				b.append("* " + (con.isIndex() ? "Index" : "Constraint") + " " + con.getDescription() + "\n");
 			}
 		}		
 		

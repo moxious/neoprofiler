@@ -9,11 +9,18 @@ import java.util.logging.Logger;
 
 import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProperty;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Transaction;
+
+import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.Value;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.TransactionWork;
+import org.neo4j.driver.v1.types.Entity;
 
 /**
  * Abstract class that contains various query running utilities to make implementation of downstream profilers easier.
@@ -22,80 +29,82 @@ import org.neo4j.graphdb.Transaction;
 public abstract class QueryRunner {
 	protected static final Logger log = Logger.getLogger(QueryRunner.class.getName());
 				
-	public List<NeoProperty> getSampleProperties(NeoProfiler parent, PropertyContainer n) {
+	public List<NeoProperty> getSampleProperties(NeoProfiler parent, Entity n) {
 		List<NeoProperty> props = new ArrayList<NeoProperty>();
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {			 
-			Iterator<String> propKeys = n.getPropertyKeys().iterator();
+		Session s = parent.getDriver().session();
+		try ( Transaction tx = s.beginTransaction() ) {			 
+			Iterator<String> propKeys = n.keys().iterator();
 			
 			while(propKeys.hasNext()) {
 				String key = propKeys.next();
-				Object val = n.getProperty(key);
+				Object val = n.get(key);
 				
 				props.add(new NeoProperty(key, val.getClass().getSimpleName()));				
 			}
 			
-		} // End try
-		
+		} finally {
+			s.close();
+		}
+
 		return props;
 	}
 	
 	public Map<String,List<Object>> runQueryComplexResult(NeoProfiler parent, String query, String...columns) {
 		HashMap<String,List<Object>> all = new HashMap<String,List<Object>>();
 		
-		ExecutionEngine engine = new ExecutionEngine(parent.getDB());
 		List<Object> retvals = new ArrayList<Object>();
-		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		System.out.println(query);
+		Session s = parent.getDriver().session();
+		try ( Transaction tx = s.beginTransaction()) {
 			// log.info(query);
-			ExecutionResult result = engine.execute(query);
+			StatementResult result = tx.run(query);
 			
-			ResourceIterator<Map<String,Object>> rows = result.iterator();
-			
-			while(rows.hasNext()) {
-				Map<String,Object> row = rows.next();
+			while(result.hasNext()) {
+				Map<String,Object> row = result.next().asMap();
 				
 				for(String col : columns) { 
 					if(!all.containsKey(col)) all.put(col, new ArrayList<Object>());
 					all.get(col).add(row.get(col));
 				}
-			}
+			}	
 			
-			rows.close();
-		} // End try
+			tx.close();
+		} finally {
+			s.close();
+		}
 		
 		return all;
 	}
 	
-	public Object runQuerySingleResult(NeoProfiler parent, String query, String columnReturn) {		
-		ExecutionEngine engine = new ExecutionEngine(parent.getDB());
-		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+	public Value runQuerySingleResult(NeoProfiler parent, String query, String columnReturn) {		
+		Session s = parent.getDriver().session();
+
+		try ( Transaction tx = s.beginTransaction()) {
 			// log.info(query);
-			ExecutionResult result = engine.execute(query);
-			ResourceIterator<Object> vals = result.columnAs(columnReturn);
+			StatementResult result = tx.run(query);
 						
-			if(vals.hasNext()) {
-				Object retval = vals.next();
-				vals.close();
-				return retval;
-			} 
+			if(result.hasNext()) {
+				Value val = result.next().get(columnReturn);
+				return val;
+			}
 			
 			return null;
-		}		
+		} finally {
+			s.close();
+		}
 	}
 	
 	public List<Object> runQueryMultipleResult(NeoProfiler parent, String query, String columnReturn) {
-		ExecutionEngine engine = new ExecutionEngine(parent.getDB());
+		Session s = parent.getDriver().session();
 		List<Object> retvals = new ArrayList<Object>();
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		try ( Transaction tx = s.beginTransaction()) {
 			// log.info(query);
-			ExecutionResult result = engine.execute(query);
-			ResourceIterator<Object> rit = result.columnAs(columnReturn);
+			StatementResult result = tx.run(query);
 					
-			while(rit.hasNext()) {				
-				retvals.add(rit.next());
+			while(result.hasNext()) {
+				retvals.add(result.next().get(columnReturn));
 			}					
 		}
 		

@@ -5,4 +5,5 @@ import org.mitre.neoprofiler.profile.NeoProfile;
 
 public interface Profiler {
 	public NeoProfile run(NeoProfiler parent);
+	public String describe();
 }

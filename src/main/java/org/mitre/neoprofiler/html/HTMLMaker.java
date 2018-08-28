@@ -29,7 +29,7 @@ public class HTMLMaker {
 	public String generateGraph(DBProfile profile) { 
 		StringBuffer b = new StringBuffer("var links = [\n");
 		
-		for(NeoProfile p : profile.getProfiles()) { 
+		for(NeoProfile p : profile.getProfiles()) {
 			if(p instanceof LabelProfile) {				
 				LabelProfile lp = (LabelProfile)p;
 				String label = (String)lp.getParameter("label");

@@ -10,7 +10,8 @@ import org.mitre.neoprofiler.profile.LabelProfile;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.Value;
 
 public class LabelProfiler extends QueryRunner implements Profiler {
 	private static final Logger log = Logger.getLogger(LabelProfiler.class.getName());
@@ -22,6 +23,10 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		}
 		
 		this.label = label.replaceAll("\\[", "").replaceAll("\\]", "");
+
+		if (this.label.charAt(0) == '"' && this.label.charAt(this.label.length() - 1) == '"') {
+			this.label = this.label.substring(1, this.label.length() - 1);
+		}
 		
 		if("".equals(this.label)) { 
 			log.severe("Invalid processed label '" + label + "' => '" + this.label + "'");
@@ -38,12 +43,12 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		List<Object>nodeSamples = runQueryMultipleResult(parent, "match (n:`" + label + "`) return n as instance limit " + sampleSize, 
 				"instance");
 		
-		try ( Transaction tx = parent.getDB().beginTx() ) {
+		try ( Transaction tx = parent.getDriver().session().beginTransaction() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
 			HashMap<String,Integer> seen = new HashMap<String,Integer>();
 			
 			for(Object ns : nodeSamples) { 				
-				for(NeoProperty prop : getSampleProperties(parent, (Node)ns)) {
+				for(NeoProperty prop : getSampleProperties(parent, ((Value)ns).asNode())) {
 					String key = prop.toString();
 					
 					// Increment counter.
@@ -68,18 +73,22 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		} // End try
 			
 		List<Object>outbound = runQueryMultipleResult(parent, 
-				"match (n:`" + label + "`)-[r]->m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)-[r]->(m) where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(outbound.isEmpty()) outbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_OUTBOUND_RELATIONSHIP_TYPES, outbound);
 		
 		List<Object>inbound = runQueryMultipleResult(parent, 
-				"match (n:`" + label + "`)<-[r]-m where n <> m return distinct(type(r)) as outbound", "outbound");
+				"match (n:`" + label + "`)<-[r]-(m) where n <> m return distinct(type(r)) as outbound", "outbound");
 		
 		if(inbound.isEmpty()) inbound.add(NeoProfile.OB_VALUE_NA);
 		p.addObservation(LabelProfile.OB_INBOUND_RELATIONSHIP_TYPES, inbound); 
 		
 		// TODO Auto-generated method stub
 		return p;
+	}
+
+	public String describe() {
+		return "LabelProfiler(" + label + ")";
 	}
 }
