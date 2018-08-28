@@ -54,7 +54,7 @@ public abstract class QueryRunner {
 		HashMap<String,List<Object>> all = new HashMap<String,List<Object>>();
 		
 		List<Object> retvals = new ArrayList<Object>();
-		
+		System.out.println(query);
 		Session s = parent.getDriver().session();
 		try ( Transaction tx = s.beginTransaction()) {
 			// log.info(query);

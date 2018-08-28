@@ -10,6 +10,7 @@ import org.mitre.neoprofiler.NeoProfiler;
 import org.mitre.neoprofiler.profile.NeoProfile;
 import org.mitre.neoprofiler.profile.NeoProperty;
 import org.mitre.neoprofiler.profile.RelationshipTypeProfile;
+import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.driver.v1.Transaction;
@@ -41,9 +42,9 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 		StatementResult stmtResult = s.run(
 			"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize);
 
-		// Map<String,List<Object>> ret = runQueryComplexResult(parent,
-		// 		"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize, 
-		// 		"right", "left", "rel");
+		 Map<String,List<Object>> ret = runQueryComplexResult(parent,
+		 		"match (n)-[r:`" + type + "`]->(m) return n as left, m as right, r as rel limit " + sampleSize,
+		 		"right", "left", "rel");
 		
 		try ( Transaction tx = parent.beginTx() ) {
 			HashSet<NeoProperty> props = new HashSet<NeoProperty>();
@@ -73,23 +74,27 @@ public class RelationshipTypeProfiler extends QueryRunner implements Profiler {
 			p.addObservation(NeoProfile.OB_SAMPLE_PROPERTIES, props);
 			
 			HashSet<String> labels = new HashSet<String>();
-			
+
 			for(Object headNode : ret.get("left")) {
-				Iterator<Label> headLabels = ((Node)headNode).getLabels().iterator();
-				while(headLabels.hasNext()) labels.add(headLabels.next().name());				
+				Iterator<String> headLabels = ((InternalNode)headNode).labels().iterator();
+				while(headLabels.hasNext()) labels.add(headLabels.next());
 			}
 			
 			p.addObservation(RelationshipTypeProfile.OB_DOMAIN, labels); 
 						
 			labels = new HashSet<String>();
 			for(Object tailNode : ret.get("right")) {
-				Iterator<Label> tailLabels = ((Node)tailNode).getLabels().iterator();
-				while(tailLabels.hasNext()) labels.add(tailLabels.next().name());				
+				Iterator<String> tailLabels = ((InternalNode)tailNode).labels().iterator();
+				while(tailLabels.hasNext()) labels.add(tailLabels.next());
 			}
 			
 			p.addObservation(RelationshipTypeProfile.OB_RANGE, labels); 			
 		} // End try
 			
 		return p;
+	}
+
+	public String describe() {
+		return "RelationshipTypeProfiler -[:" + type + "]->";
 	}
 }

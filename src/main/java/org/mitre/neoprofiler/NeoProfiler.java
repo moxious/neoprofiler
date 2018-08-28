@@ -76,7 +76,7 @@ public class NeoProfiler {
 		
 		while(x < schedule.size()) {
 			Profiler profiler = schedule.get(x);
-			System.out.println("Running " + profiler.getClass().getSimpleName() + " (" + (x+1) + " of " + schedule.size() + ")");
+			System.out.println("Running " + profiler.describe() + " (" + (x+1) + " of " + schedule.size() + ")");
 			long t1 = System.currentTimeMillis();
 			
 			NeoProfile prof = null;

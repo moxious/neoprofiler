@@ -49,4 +49,8 @@ public class SchemaProfiler extends QueryRunner implements Profiler {
 		*/
 		return p;
 	}
+
+	public String describe() {
+		return "SchemaProfiler";
+	}
 }

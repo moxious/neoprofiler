@@ -17,12 +17,20 @@ public class RelationshipsProfiler extends QueryRunner implements Profiler {
 		List<Object> relTypes = runQueryMultipleResult(parent, "start r=relationship(*) return distinct(type(r)) as relTypes", "relTypes");
 		p.addObservation("Available Relationship Types", relTypes);
 
-		for(Object relType : relTypes) { 
-			parent.schedule(new RelationshipTypeProfiler(""+relType));
+		for(Object relType : relTypes) {
+			String relTypeName = ""+relType;
+			if (relTypeName.charAt(0) == '"' && relTypeName.charAt(relTypeName.length() - 1) == '"') {
+				relTypeName = relTypeName.substring(1, relTypeName.length() - 1);
+			}
+			parent.schedule(new RelationshipTypeProfiler(relTypeName));
 		}
 		
 		p.addObservation("Total Relationships", runQuerySingleResult(parent, "start r=relationship(*) return count(r) as c", "c"));
 		
 		return p;
+	}
+
+	public String describe() {
+		return "RelationshipsProfiler";
 	}
 } // End RelationshipsProfiler

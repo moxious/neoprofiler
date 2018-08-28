@@ -23,6 +23,10 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		}
 		
 		this.label = label.replaceAll("\\[", "").replaceAll("\\]", "");
+
+		if (this.label.charAt(0) == '"' && this.label.charAt(this.label.length() - 1) == '"') {
+			this.label = this.label.substring(1, this.label.length() - 1);
+		}
 		
 		if("".equals(this.label)) { 
 			log.severe("Invalid processed label '" + label + "' => '" + this.label + "'");
@@ -82,5 +86,9 @@ public class LabelProfiler extends QueryRunner implements Profiler {
 		
 		// TODO Auto-generated method stub
 		return p;
+	}
+
+	public String describe() {
+		return "LabelProfiler(" + label + ")";
 	}
 }

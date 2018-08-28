@@ -40,4 +40,8 @@ public class NodesProfiler extends QueryRunner implements Profiler {
 
 		return p;
 	} // End run
+
+	public String describe() {
+		return "NodesProfiler";
+	}
 } // End NodesProfiler
